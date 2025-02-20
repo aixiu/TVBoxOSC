@@ -171,14 +171,14 @@ jobs:
         if: ${{ env.commit }}
         working-directory: TVBoxOSC
         env:
-          CHAT_ID: -1001734684817
+          CHAT_ID: ${{ secrets.CHANNEL_ID }}
           TELEGRAM_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           if [ -n "${{ secrets.BOT_TOKEN }}" ]; then
             sed -i -e '1s/\[\(.*\)\].*/#\1/' -e 's#\([&"\/]\)#\\\1#g' apk/${{ matrix.userName }}-Release.log
             mv -f apk/${{ matrix.userName }}-Release.log caption.txt
             chmod +x telegram-bot-api-binary
-            ./telegram-bot-api-binary --api-id=21724 --api-hash=3e0cb5efcd52300aec5994fdfc5bdc16 --local 2>&1 > /dev/null &
+            ./telegram-bot-api-binary --api-id=${{ secrets.API_ID }} --api-hash=${{ secrets.API_HASH }} --local 2>&1 > /dev/null &
             mv ../.github/scripts/upload.py ./
             python upload.py
           fi
@@ -196,7 +196,6 @@ jobs:
           git add --all
           git commit -m "${{ env.commit }}"
           git push -u -f origin master
-
   telegram-bot-api:
     name: Telegram Bot API
     runs-on: ubuntu-latest
@@ -208,7 +207,6 @@ jobs:
         run: |
           git clone --recursive https://github.com/tdlib/telegram-bot-api.git
           git status telegram-bot-api >> telegram-bot-api-status
-
       - name: Cache Bot API Binary
         id: cache-bot-api
         uses: actions/cache@v4
@@ -230,7 +228,6 @@ jobs:
           cd ../..
           ls -l telegram-bot-api/bin/telegram-bot-api*
           cp telegram-bot-api/bin/telegram-bot-api telegram-bot-api-binary
-
       - name: Upload Binary
         uses: actions/upload-artifact@master
         with:
